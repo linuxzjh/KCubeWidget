@@ -18,7 +18,8 @@ public:
 protected:
     void showEvent(QShowEvent* event);
 private:
-    void initUI();
+    void updateUI();
+    void blockSignalChildren(bool bBlockSignal);
     Ui::KCube3DSettingWidget *ui;
 };
 

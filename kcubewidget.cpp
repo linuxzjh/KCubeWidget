@@ -1,18 +1,15 @@
 #include "kcubewidget.h"
 #include <QOpenGLShaderProgram>
 #include <QOpenGLTexture>
+#include <QtMath>
 
 #define PROGRAM_VERTEX_ATTRIBUTE   0
 #define PROGRAM_TEXCOORD_ATTRIBUTE 1
 
 KCubeWidget::KCubeWidget(QWidget *parent)
     : QOpenGLWidget(parent)
-    , clearColor(Qt::black)
-    , xRot(0)
-    , yRot(0)
-    , zRot(0)
-    , scale(0.5)
-    , program()
+    , m_clearColor(Qt::black)
+    , m_program()
 {
 
 }
@@ -20,24 +17,71 @@ KCubeWidget::KCubeWidget(QWidget *parent)
 KCubeWidget::~KCubeWidget()
 {
     makeCurrent();
-    vbo.destroy();
-    delete program;
+    m_vbo.destroy();
+    delete m_program;
     doneCurrent();
 }
 
 void KCubeWidget::rotateBy(int xAngle, int yAngle, int zAngle)
 {
-    xRot += xAngle;
-    yRot += yAngle;
-    zRot += zAngle;
+     rectangleInfo.xRot += xAngle;
+     rectangleInfo.yRot += yAngle;
+     rectangleInfo.zRot += zAngle;
+     update();
+     emit dataChanged();
+}
 
+void KCubeWidget::setScale(GLfloat scale)
+{
+    rectangleInfo.scale += scale;
+    update();
+}
+
+void KCubeWidget::setRoteX(GLfloat xRot)
+{
+    rectangleInfo.xRot = xRot;
+    update();
+}
+
+void KCubeWidget::setRoteY(GLfloat yRot)
+{
+    rectangleInfo.yRot = yRot;
+    update();
+}
+
+void KCubeWidget::setRoteZ(GLfloat zRot)
+{
+    rectangleInfo.zRot = zRot;
+    update();
+}
+
+void KCubeWidget::setLength(GLfloat length)
+{
+    rectangleInfo.length = length;
+    update();
+}
+
+void KCubeWidget::setWidth(GLfloat width)
+{
+    rectangleInfo.width = width;
+    update();
+}
+
+void KCubeWidget::setHeight(GLfloat height)
+{
+    rectangleInfo.height = height;
     update();
 }
 
 void KCubeWidget::setClearColor(const QColor &color)
 {
-    clearColor = color;
+    m_clearColor = color;
     update();
+}
+
+const rectangleInfo_stru &KCubeWidget::getInfo() const
+{
+    return rectangleInfo;
 }
 
 void KCubeWidget::initializeGL()
@@ -79,49 +123,54 @@ void KCubeWidget::initializeGL()
             ;
     fshader->compileSourceCode(fsrc);
 
-    program = new QOpenGLShaderProgram;
-    program->addShader(vshader);
-    program->addShader(fshader);
-    program->bindAttributeLocation("vertex", PROGRAM_VERTEX_ATTRIBUTE);
-    program->bindAttributeLocation("texCoord", PROGRAM_TEXCOORD_ATTRIBUTE);
-    program->link();
-    program->bind();
-    program->setUniformValue("texture", 0);
+    m_program = new QOpenGLShaderProgram;
+    m_program->addShader(vshader);
+    m_program->addShader(fshader);
+    m_program->bindAttributeLocation("vertex", PROGRAM_VERTEX_ATTRIBUTE);
+    m_program->bindAttributeLocation("texCoord", PROGRAM_TEXCOORD_ATTRIBUTE);
+    m_program->link();
+    m_program->bind();
+    m_program->setUniformValue("texture", 0);
 }
 
 void KCubeWidget::paintGL()
 {
     //设置刷新显示的时候的背景颜色
-    glClearColor(clearColor.redF(), clearColor.greenF(), clearColor.blueF(), clearColor.alphaF());
+    glClearColor(m_clearColor.redF(), m_clearColor.greenF(), m_clearColor.blueF(), m_clearColor.alphaF());
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    QMatrix4x4 m;
-    //定义一个长方体，长方体正面与camera的光轴垂直，4.0f表示长方体正面与camera的距离,15.0f表示长方体背面
-    m.ortho(-1.0f, +1.0f, +1.0f, -1.0f, 4.0f, 15.0f);
-    //平移
-    m.translate(0.0f, 0.0f, -10.0f);
+    QMatrix4x4 m;   //定义一个矩阵，由于未初始化，所以构造函数会初始化未一个单位矩阵；
+    m.perspective(M_PI / 2.0f, 1.3f, 3.0f, 200.0f);
+    qDebug() << "m111===>" << m;
+    m.lookAt(QVector3D(0, 0, 100), QVector3D(0, 0, 0), QVector3D(0, 1, 0));
+    qDebug() << "m111311111===>" << m;
+    //平移变换
+    m.translate(0.0f, 0.0f, rectangleInfo.scale);
+    qDebug() << "m222===>" << m;
 //    //沿着X轴旋转
-//    m.rotate(xRot / 16.0f, 1.0f, 0.0f, 0.0f);
+    m.rotate(rectangleInfo.xRot, 1.0f, 0.0f, 0.0f);
     //沿着Y轴旋转
-    m.rotate(yRot / 16.0f, 0.0f, 1.0f, 0.0f);
+    m.rotate(rectangleInfo.yRot, 0.0f, 1.0f, 0.0f);
+    qDebug() << "m333===>" << m;
 //    //缩放
-//    m.scale(scale / 10.0f, scale / 10.0f, scale / 10.0f);
+    m.scale(rectangleInfo.length, rectangleInfo.width, rectangleInfo.height);
+    qDebug() << "m444===>" << m;
 
     //注意:上面关于m的操作在程序运行过程中，是先将顶点旋转，然后平移，最后通过ortho()定义视景体
     //将当前上下文中名为matrix的变量赋值为矩阵
-    program->setUniformValue("matrix", m);
+    m_program->setUniformValue("matrix", m);
 
     //启用此着色器程序中位于PROGRAM_VERTEX_ATTRIBUTE位置的顶点数组
-    program->enableAttributeArray(PROGRAM_VERTEX_ATTRIBUTE);
+    m_program->enableAttributeArray(PROGRAM_VERTEX_ATTRIBUTE);
     //启用此着色器程序中位于enableAttributeArray位置的顶点数组
-    program->enableAttributeArray(PROGRAM_TEXCOORD_ATTRIBUTE);
+    m_program->enableAttributeArray(PROGRAM_TEXCOORD_ATTRIBUTE);
 
     //QOpenGLShaderProgram::setAttriBuffer 在此着色器程序中属性的位置设置一个顶点值数组，从当前绑定的顶点缓冲区中的特定偏移量开始。
     //步幅表示顶点之间的字节数。默认的步幅值为零，表示顶点密集地排列在值数组中。该类型表示顶点值数组中元素的类型，通常是gl_float、gl_unsigned_byte等
-    program->setAttributeBuffer(PROGRAM_VERTEX_ATTRIBUTE, GL_FLOAT, 0, 3, 5 * sizeof (GLfloat));
-    program->setAttributeBuffer(PROGRAM_TEXCOORD_ATTRIBUTE, GL_FLOAT, 3 * sizeof(GLfloat), 2, 5 * sizeof (GLfloat));
-    textures->bind();
+    m_program->setAttributeBuffer(PROGRAM_VERTEX_ATTRIBUTE, GL_FLOAT, 0, 3, 5 * sizeof (GLfloat));
+    m_program->setAttributeBuffer(PROGRAM_TEXCOORD_ATTRIBUTE, GL_FLOAT, 3 * sizeof(GLfloat), 2, 5 * sizeof (GLfloat));
+    m_textures->bind();
 
 //    for(int i=0;i<6;i++)
 //    {
@@ -132,8 +181,8 @@ void KCubeWidget::paintGL()
     for(int i=0;i<6;i++)
     {
         glLineWidth(2.0f);
-        glDrawArrays(GL_LINE_LOOP,i*4,4);
-//        glDrawArrays(GL_TRIANGLE_FAN,i*4,4);
+//        glDrawArrays(GL_LINE_LOOP,i*4,4);
+        glDrawArrays(GL_TRIANGLE_FAN,i*4,4);
     }
 }
 
@@ -145,31 +194,27 @@ void KCubeWidget::resizeGL(int w, int h)
 
 void KCubeWidget::mousePressEvent(QMouseEvent *event)
 {
-    lastPos = event->pos();
+    m_lastPos = event->pos();
 }
 
 void KCubeWidget::mouseMoveEvent(QMouseEvent *event)
 {
-    int dx = event->x() - lastPos.x();
-    int dy = event->y() - lastPos.y();
+    int dx = event->x() - m_lastPos.x();
+    int dy = event->y() - m_lastPos.y();
 
     if (event->buttons() & Qt::LeftButton) {
-        rotateBy(8 * dy, 8 *dx, 0);
+        rotateBy(dy, dx, 0);
     }
 
-    lastPos = event->pos();
-}
-
-void KCubeWidget::mouseReleaseEvent(QMouseEvent *event)
-{
-    emit clicked();
+    m_lastPos = event->pos();
 }
 
 void KCubeWidget::wheelEvent(QWheelEvent *event)
 {
     double val = event->delta() / 120.0;
-    scale += (GLfloat)val;
+    rectangleInfo.scale += (GLfloat)val;
     update();
+    emit dataChanged();
 }
 
 void KCubeWidget::makeObject()
@@ -202,11 +247,11 @@ void KCubeWidget::makeObject()
         {{0.5, 0.5, -0.5}, {1, 1}},  {{0.5, 0.5, 0.5}, {0, 1}},
     };
 
-    vbo.create();
-    vbo.bind();
-    vbo.allocate(m_data.constData(), m_data.size() * sizeof(CubePoint));
+    m_vbo.create();
+    m_vbo.bind();
+    m_vbo.allocate(m_data.constData(), m_data.size() * sizeof(CubePoint));
 
-    textures = new QOpenGLTexture(QImage(":/2.jpg").mirrored());
+    m_textures = new QOpenGLTexture(QImage(":/2.jpg").mirrored());
 
 }
 
