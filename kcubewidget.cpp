@@ -2,6 +2,7 @@
 #include <QOpenGLShaderProgram>
 #include <QOpenGLTexture>
 #include <QtMath>
+#include <QPainter>
 
 #define PROGRAM_VERTEX_ATTRIBUTE   0
 #define PROGRAM_TEXCOORD_ATTRIBUTE 1
@@ -33,7 +34,7 @@ void KCubeWidget::rotateBy(int xAngle, int yAngle, int zAngle)
 
 void KCubeWidget::setScale(GLfloat scale)
 {
-    rectangleInfo.scale += scale;
+    rectangleInfo.scale = scale;
     update();
 }
 
@@ -140,10 +141,12 @@ void KCubeWidget::paintGL()
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+#if 1
+
     QMatrix4x4 m;   //定义一个矩阵，由于未初始化，所以构造函数会初始化未一个单位矩阵；
-    m.perspective(M_PI / 2.0f, 1.3f, 3.0f, 200.0f);
+    m.perspective(M_PI / 2.0f, 1.3f, 3.0f, 300.0f);
     qDebug() << "m111===>" << m;
-    m.lookAt(QVector3D(0, 0, 100), QVector3D(0, 0, 0), QVector3D(0, 1, 0));
+    m.lookAt(QVector3D(0, 0, -100), QVector3D(0, 0, 0), QVector3D(0, 1, 0));
     qDebug() << "m111311111===>" << m;
     //平移变换
     m.translate(0.0f, 0.0f, rectangleInfo.scale);
@@ -154,7 +157,7 @@ void KCubeWidget::paintGL()
     m.rotate(rectangleInfo.yRot, 0.0f, 1.0f, 0.0f);
     qDebug() << "m333===>" << m;
 //    //缩放
-    m.scale(rectangleInfo.length, rectangleInfo.width, rectangleInfo.height);
+    m.scale(rectangleInfo.length / 3, rectangleInfo.width / 3, rectangleInfo.height / 3);
     qDebug() << "m444===>" << m;
 
     //注意:上面关于m的操作在程序运行过程中，是先将顶点旋转，然后平移，最后通过ortho()定义视景体
@@ -172,18 +175,18 @@ void KCubeWidget::paintGL()
     m_program->setAttributeBuffer(PROGRAM_TEXCOORD_ATTRIBUTE, GL_FLOAT, 3 * sizeof(GLfloat), 2, 5 * sizeof (GLfloat));
     m_textures->bind();
 
-//    for(int i=0;i<6;i++)
-//    {
-//    glDrawArrays(GL_TRIANGLE_FAN,i*4,4);
-//    }
-//    textures->release();
-
     for(int i=0;i<6;i++)
     {
+
         glLineWidth(2.0f);
-//        glDrawArrays(GL_LINE_LOOP,i*4,4);
-        glDrawArrays(GL_TRIANGLE_FAN,i*4,4);
+        if (i == 0 || i == 1 || i == 4) {
+            glDrawArrays(GL_TRIANGLE_FAN,i*4,4);
+        } else {
+            glDrawArrays(GL_LINE_LOOP,i*4,4);
+        }
+
     }
+#endif
 }
 
 void KCubeWidget::resizeGL(int w, int h)
@@ -212,7 +215,7 @@ void KCubeWidget::mouseMoveEvent(QMouseEvent *event)
 void KCubeWidget::wheelEvent(QWheelEvent *event)
 {
     double val = event->delta() / 120.0;
-    rectangleInfo.scale += (GLfloat)val;
+    rectangleInfo.scale += (GLfloat)(-val);
     update();
     emit dataChanged();
 }
@@ -251,7 +254,7 @@ void KCubeWidget::makeObject()
     m_vbo.bind();
     m_vbo.allocate(m_data.constData(), m_data.size() * sizeof(CubePoint));
 
-    m_textures = new QOpenGLTexture(QImage(":/2.jpg").mirrored());
+    m_textures = new QOpenGLTexture(QImage(":/1.png").mirrored());
 
 }
 

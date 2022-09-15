@@ -57,13 +57,13 @@ void KCube3DSettingWidget::updateUI()
 {
     const rectangleInfo_stru & info = ui->cubeWidget->getInfo();
     blockSignalChildren(true);
-//    ui->doubleSpinBox_length->setRange(0.01, 10);
-//    ui->doubleSpinBox_width->setRange(0.01, 10);
-//    ui->doubleSpinBox_height->setRange(0.01, 10);
-//    ui->doubleSpinBox_scale->setRange(0.01, 200);
-//    ui->doubleSpinBox_xRot->setRange(0, 180);
-//    ui->doubleSpinBox_yRot->setRange(0, 180);
-//    ui->doubleSpinBox_zRot->setRange(0, 180);
+    ui->doubleSpinBox_length->setRange(0.01, 10);
+    ui->doubleSpinBox_width->setRange(0.01, 10);
+    ui->doubleSpinBox_height->setRange(0.01, 10);
+    ui->doubleSpinBox_scale->setRange(0.01, 200);
+    ui->doubleSpinBox_xRot->setRange(0, 180);
+    ui->doubleSpinBox_yRot->setRange(0, 180);
+    ui->doubleSpinBox_zRot->setRange(0, 180);
 
     ui->doubleSpinBox_length->setValue(info.length);
     ui->doubleSpinBox_width->setValue(info.width);
