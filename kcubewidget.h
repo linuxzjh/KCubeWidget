@@ -11,14 +11,23 @@ QT_FORWARD_DECLARE_CLASS(QOpenGLShaderProgram)
 QT_FORWARD_DECLARE_CLASS(QOpenGLTexture)
 
 typedef  struct  _rectangleInfo_stru {
-    GLfloat length;    //长, 取值范围0.01-10.00
-    GLfloat width;     //宽, 取值范围0.01-10.00
-    GLfloat height;    //高, 取值范围0.01-10.00
+    enum EM_DisplayIndex {
+        DI_Front = 0,
+        DI_Top,
+        DI_Back,
+        DI_Bottom,
+        DI_Left,
+        DI_Right
+    };
+    GLfloat length;                 //长, 取值范围0.01-10.00
+    GLfloat width;                  //宽, 取值范围0.01-10.00
+    GLfloat height;                 //高, 取值范围0.01-10.00
 
-    GLfloat xRot;      //绕x旋转，取值范围0.00-180.00.支持微调
-    GLfloat yRot;      //绕y旋转，取值范围0.00-180.00.支持微调
-    GLfloat zRot;      //绕z旋转，取值范围0.00-180.00.支持微调
-    GLfloat scale;     //缩放, 默认为3.00,取值范围0.01-200.00;
+    GLfloat xRot;                   //绕x旋转，取值范围0.00-180.00.支持微调
+    GLfloat yRot;                   //绕y旋转，取值范围0.00-180.00.支持微调
+    GLfloat zRot;                   //绕z旋转，取值范围0.00-180.00.支持微调
+    GLfloat scale;                  //缩放, 默认为3.00,取值范围0.01-200.00;
+    QString displayTextInfos[6];    //每个面显示的文字信息, 前上后下左右，里面为前，外面为后。
     _rectangleInfo_stru() {
         length = 3;
         width = 3;
@@ -56,6 +65,7 @@ public:
     void setLength(GLfloat length);
     void setWidth(GLfloat width);
     void setHeight(GLfloat height);
+    void setTextInfo(rectangleInfo_stru::EM_DisplayIndex index, QString text);
     const rectangleInfo_stru& getInfo() const;
 signals:
     void dataChanged();

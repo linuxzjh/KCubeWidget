@@ -33,7 +33,33 @@
          </widget>
         </item>
         <item row="0" column="1">
-         <widget class="QComboBox" name="comboBox_leftScreen"/>
+         <widget class="QComboBox" name="comboBox_leftScreen">
+          <item>
+           <property name="text">
+            <string>屏幕1</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>屏幕2</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>屏幕3</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>屏幕4</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>屏幕5</string>
+           </property>
+          </item>
+         </widget>
         </item>
         <item row="1" column="0">
          <widget class="QLabel" name="label_9">
@@ -43,7 +69,33 @@
          </widget>
         </item>
         <item row="1" column="1">
-         <widget class="QComboBox" name="comboBox_rightScreen"/>
+         <widget class="QComboBox" name="comboBox_rightScreen">
+          <item>
+           <property name="text">
+            <string>屏幕1</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>屏幕2</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>屏幕3</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>屏幕4</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>屏幕5</string>
+           </property>
+          </item>
+         </widget>
         </item>
         <item row="2" column="0">
          <widget class="QLabel" name="label_10">
@@ -53,7 +105,33 @@
          </widget>
         </item>
         <item row="2" column="1">
-         <widget class="QComboBox" name="comboBox_topScreen"/>
+         <widget class="QComboBox" name="comboBox_topScreen">
+          <item>
+           <property name="text">
+            <string>屏幕1</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>屏幕2</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>屏幕3</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>屏幕4</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>屏幕5</string>
+           </property>
+          </item>
+         </widget>
         </item>
        </layout>
       </widget>

@@ -6,9 +6,27 @@ KCube3DSettingWidget::KCube3DSettingWidget(QWidget *parent) :
     ui(new Ui::KCube3DSettingWidget)
 {
     ui->setupUi(this);
-    ui->cubeWidget->setClearColor(Qt::black);
+    ui->cubeWidget->setClearColor(Qt::gray);
     connect(ui->cubeWidget, &KCubeWidget::dataChanged, this, [this](){
         updateUI();
+    });
+
+    connect(ui->comboBox_topScreen, QOverload<const QString &>::of(&QComboBox::activated),
+        [&](const QString &text){
+        Q_UNUSED(text);
+        ui->cubeWidget->setTextInfo(rectangleInfo_stru::DI_Bottom, ui->comboBox_topScreen->currentText());
+    });
+
+    connect(ui->comboBox_leftScreen, QOverload<const QString &>::of(&QComboBox::activated),
+        [&](const QString &text){
+        Q_UNUSED(text);
+        ui->cubeWidget->setTextInfo(rectangleInfo_stru::DI_Front, ui->comboBox_leftScreen->currentText());
+    });
+
+    connect(ui->comboBox_rightScreen, QOverload<const QString &>::of(&QComboBox::activated),
+        [&](const QString &text){
+        Q_UNUSED(text);
+        ui->cubeWidget->setTextInfo(rectangleInfo_stru::DI_Left, ui->comboBox_rightScreen->currentText());
     });
 
     connect(ui->doubleSpinBox_length, QOverload<double>::of(&QDoubleSpinBox::valueChanged),

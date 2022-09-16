@@ -9,7 +9,7 @@
 
 KCubeWidget::KCubeWidget(QWidget *parent)
     : QOpenGLWidget(parent)
-    , m_clearColor(Qt::black)
+    , m_clearColor(Qt::gray)
     , m_program()
 {
 
@@ -28,6 +28,13 @@ void KCubeWidget::rotateBy(int xAngle, int yAngle, int zAngle)
      rectangleInfo.xRot += xAngle;
      rectangleInfo.yRot += yAngle;
      rectangleInfo.zRot += zAngle;
+
+     rectangleInfo.xRot = rectangleInfo.xRot < 0 ? 0 : rectangleInfo.xRot;
+     rectangleInfo.xRot = rectangleInfo.xRot > 180 ? 180 : rectangleInfo.xRot;
+     rectangleInfo.yRot = rectangleInfo.yRot < 0 ? 0 : rectangleInfo.yRot;
+     rectangleInfo.yRot = rectangleInfo.yRot > 180 ? 180 : rectangleInfo.yRot;
+     rectangleInfo.zRot = rectangleInfo.zRot < 0 ? 0 : rectangleInfo.zRot;
+     rectangleInfo.zRot = rectangleInfo.zRot > 180 ? 180 : rectangleInfo.zRot;
      update();
      emit dataChanged();
 }
@@ -71,6 +78,12 @@ void KCubeWidget::setWidth(GLfloat width)
 void KCubeWidget::setHeight(GLfloat height)
 {
     rectangleInfo.height = height;
+    update();
+}
+
+void KCubeWidget::setTextInfo(_rectangleInfo_stru::EM_DisplayIndex index, QString text)
+{
+    rectangleInfo.displayTextInfos[index] = text;
     update();
 }
 
@@ -173,18 +186,40 @@ void KCubeWidget::paintGL()
     //步幅表示顶点之间的字节数。默认的步幅值为零，表示顶点密集地排列在值数组中。该类型表示顶点值数组中元素的类型，通常是gl_float、gl_unsigned_byte等
     m_program->setAttributeBuffer(PROGRAM_VERTEX_ATTRIBUTE, GL_FLOAT, 0, 3, 5 * sizeof (GLfloat));
     m_program->setAttributeBuffer(PROGRAM_TEXCOORD_ATTRIBUTE, GL_FLOAT, 3 * sizeof(GLfloat), 2, 5 * sizeof (GLfloat));
-    m_textures->bind();
 
     for(int i=0;i<6;i++)
     {
 
         glLineWidth(2.0f);
-        if (i == 0 || i == 1 || i == 4) {
+        if (i == rectangleInfo_stru::DI_Bottom || i == rectangleInfo_stru::DI_Left || i == rectangleInfo_stru::DI_Front) {
+            QImage image(":/2.jpg");
+
+            glDisable(GL_DEPTH_TEST);
+
+            QPainter painter(&image);
+            painter.save();
+            painter.setRenderHint(QPainter::Antialiasing, true);
+            painter.setCompositionMode(QPainter::CompositionMode_Source);
+
+            QPen pen;
+            pen.setColor(Qt::blue);
+            painter.setPen(pen);
+            QFont font;
+            font.setPixelSize(80);
+            painter.setFont(font);
+            painter.drawText(image.rect(), Qt::AlignCenter, rectangleInfo.displayTextInfos[i]);
+
+            painter.restore();
+
+            glEnable(GL_DEPTH_TEST);
+
+            m_textures->setData(image.mirrored());
+            m_textures->bind();
             glDrawArrays(GL_TRIANGLE_FAN,i*4,4);
+            m_textures->release();
         } else {
             glDrawArrays(GL_LINE_LOOP,i*4,4);
         }
-
     }
 #endif
 }
@@ -214,8 +249,16 @@ void KCubeWidget::mouseMoveEvent(QMouseEvent *event)
 
 void KCubeWidget::wheelEvent(QWheelEvent *event)
 {
-    double val = event->delta() / 120.0;
+    /*
+    QWheelEvent的delta()函数获得滚轮滚动的距离值，通过此值判断滚轮滚动的方向。
+    若delta大于0，则表示滚轮向前（远离用户的方向），小于零则表明向后，（靠近用户的方向）。
+    鼠标的滚动事件，滚轮每滚动1格，相当于移动了8度，
+    而常见的滚轮鼠标拨动一下的滚动角度为15度，因此滚轮拨动一圈相当于移动了120度。
+    */
+    double val = event->delta() / 8.0;
     rectangleInfo.scale += (GLfloat)(-val);
+    rectangleInfo.scale = rectangleInfo.scale < 0.01 ? 0.01 : rectangleInfo.scale;
+    rectangleInfo.scale = rectangleInfo.scale > 200 ? 200 : rectangleInfo.scale;
     update();
     emit dataChanged();
 }
@@ -254,7 +297,7 @@ void KCubeWidget::makeObject()
     m_vbo.bind();
     m_vbo.allocate(m_data.constData(), m_data.size() * sizeof(CubePoint));
 
-    m_textures = new QOpenGLTexture(QImage(":/1.png").mirrored());
+    m_textures = new QOpenGLTexture(QOpenGLTexture::Target2D);
 
 }
 
